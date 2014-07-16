@@ -1,25 +1,9 @@
-import unittest
-import os
-
-from nanomsg_wrappers import set_wrapper_choice, get_default_for_platform
-set_wrapper_choice(os.environ.get('NANOMSG_PY_TEST_WRAPPER',
-                                  get_default_for_platform()))
-
-from nanomsg import (
-    PAIR,
-    Socket,
-    LINGER,
-    SOL_SOCKET
-)
-
-SOCKET_ADDRESS = os.environ.get('NANOMSG_PY_TEST_ADDRESS', "inproc://a")
-
-LINGER_DEFAULT_VALUE = 1000
+from . import nanomsg, unittest, SOCKET_ADDRESS, LINGER_DEFAULT_VALUE
 
 
 class TestGeneralSocketMethods(unittest.TestCase):
     def setUp(self):
-        self.socket = Socket(PAIR)
+        self.socket = nanomsg.Socket(nanomsg.PAIR)
 
     def tearDown(self):
         self.socket.close()
@@ -45,16 +29,13 @@ class TestGeneralSocketMethods(unittest.TestCase):
     def test_set_int_option(self):
         expected = 500
 
-        self.socket.set_int_option(SOL_SOCKET, LINGER, expected)
+        self.socket.set_int_option(
+            nanomsg.SOL_SOCKET, nanomsg.LINGER, expected)
 
-        actual = self.socket.get_int_option(SOL_SOCKET, LINGER)
+        actual = self.socket.get_int_option(nanomsg.SOL_SOCKET, nanomsg.LINGER)
         self.assertEqual(expected, actual)
 
     def test_get_int_option(self):
-        actual = self.socket.get_int_option(SOL_SOCKET, LINGER)
+        actual = self.socket.get_int_option(nanomsg.SOL_SOCKET, nanomsg.LINGER)
 
         self.assertEqual(LINGER_DEFAULT_VALUE, actual)
-
-
-if __name__ == '__main__':
-    unittest.main()

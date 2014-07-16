@@ -1,23 +1,9 @@
-import os
-import unittest
-
-from nanomsg_wrappers import set_wrapper_choice, get_default_for_platform
-set_wrapper_choice(os.environ.get('NANOMSG_PY_TEST_WRAPPER',
-                                  get_default_for_platform()))
-import nanomsg
-from nanomsg import (
-    PAIR,
-    Socket,
-    LINGER,
-    SOL_SOCKET,
-REQ,
-REP
-)
+from . import nanomsg, unittest
 
 class Issue22Test(unittest.TestCase):
     def test_issue22(self):
-        s1 = Socket(REQ)
-        s2 = Socket(REP)
+        s1 = nanomsg.Socket(nanomsg.REQ)
+        s2 = nanomsg.Socket(nanomsg.REP)
 
         s1.bind('inproc://hello')
         s2.bind('inproc://hi')
