@@ -1,5 +1,8 @@
 import os
-import unittest
+try:
+    import unittest2 as unittest
+except ImportError:
+    import unittest
 
 from nanomsg_wrappers import set_wrapper_choice, get_default_for_platform
 set_wrapper_choice(os.environ.get('NANOMSG_PY_TEST_WRAPPER',

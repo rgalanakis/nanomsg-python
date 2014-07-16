@@ -1,13 +1,15 @@
 language: python
 python:
-  - "3.2"
-  - "3.3"
-  - "3.4"
   - "2.7"
-  - "2.6"
-  
-# command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
+env:
+  - TOX_ENV=py26
+  - TOX_ENV=py27
+  - TOX_ENV=py33
+  - TOX_ENV=py34
+  - TOX_ENV=pypy
 install:
+  - "pip install tox --download-cache $HOME/.pip-cache"
+  - "pip install coveralls --download-cache $HOME/.pip-cache"
   - git clone --quiet --depth=100 "https://github.com/nanomsg/nanomsg.git" ~/builds/nanomsg
       && pushd ~/builds/nanomsg
       && ./autogen.sh
@@ -15,6 +17,10 @@ install:
       && make 
       && sudo make install
       && popd;
-
-# command to run tests, e.g. python setup.py test      
-script: LD_LIBRARY_PATH=/lib:/usr/lib:/usr/local/lib python setup.py test
+script: LD_LIBRARY_PATH=/lib:/usr/lib:/usr/local/lib tox -e $TOX_ENV
+after_success:
+  - coveralls
+cache:
+  directories:
+    - .tox
+    - $HOME/.pip-cache/
