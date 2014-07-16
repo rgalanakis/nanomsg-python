@@ -1,4 +1,5 @@
-from __future__ import division, absolute_import, print_function, unicode_literals
+from __future__ import (
+    division, absolute_import, print_function, unicode_literals)
 
 from platform import python_implementation
 import pkgutil
@@ -34,5 +35,5 @@ def get_default_for_platform():
 
 
 def list_wrappers():
-    return [module_name.split('_',2)[-1] for _, module_name, _ in
-     pkgutil.iter_modules() if module_name.startswith('_nanomsg_')]
+    return [module_name.split('_', 2)[-1] for _, module_name, _ in
+            pkgutil.iter_modules() if module_name.startswith('_nanomsg_')]

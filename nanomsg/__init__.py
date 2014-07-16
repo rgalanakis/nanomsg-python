@@ -1,8 +1,8 @@
-from __future__ import division, absolute_import, print_function, unicode_literals
+from __future__ import (
+    division, absolute_import, print_function, unicode_literals)
 
 from .version import __version__
 from struct import Struct as _Struct
-import warnings
 
 from . import wrapper
 
@@ -135,6 +135,7 @@ class Socket(object):
         def address(self):
             return self._address
 
+        # noinspection PyProtectedMember
         def shutdown(self):
             self._fdocket._endpoints.remove(self)
             _nn_check_positive_rtn(nn_shutdown(self._fdocket._s,
@@ -222,8 +223,8 @@ class Socket(object):
 
     send_fd = property(_get_send_fd, doc='Send file descripter')
     recv_fd = property(_get_recv_fd, doc='Receive file descripter')
-    linger  = property(_get_linger, _set_linger, doc='Socket linger in '
-                       'milliseconds (0.001 seconds)')
+    linger = property(_get_linger, _set_linger, doc='Socket linger in '
+                      'milliseconds (0.001 seconds)')
     recv_buffer_size = property(_get_recv_buffer_size, _set_recv_buffer_size,
                                 doc='Receive buffer size in bytes')
     send_buffer_size = property(_get_send_buffer_size, _set_send_timeout,
@@ -263,7 +264,7 @@ class Socket(object):
     @property
     def uses_nanoconfig(self):
         return (self._endpoints and
-            isinstance(self._endpoints[0], Socket.NanoconfigEndpoint))
+                isinstance(self._endpoints[0], Socket.NanoconfigEndpoint))
 
     def bind(self, address):
         """Add a local endpoint to the socket"""
@@ -349,7 +350,7 @@ class Socket(object):
                                 ' as size of int (%r)') % (rtn, size))
         return Socket._INT_PACKER.unpack_from(buffer(buf))[0]
 
-    def get_string_option(self, level, option, max_len=16*1024):
+    def get_string_option(self, level, option, max_len=16 * 1024):
         buf = create_writable_buffer(max_len)
         rtn, length = wrapper.nn_getsockopt(self._fd, level, option, buf)
         _nn_check_positive_rtn(rtn)
@@ -362,7 +363,7 @@ class Socket(object):
     def __enter__(self):
         return self
 
-    def __exit__(self, *args):
+    def __exit__(self, *_):
         self.close()
 
     def __repr__(self):

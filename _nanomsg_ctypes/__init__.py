@@ -1,8 +1,7 @@
-from __future__ import division, absolute_import, print_function,\
- unicode_literals
+from __future__ import (
+    division, absolute_import, print_function, unicode_literals)
 
 import ctypes
-import platform
 import sys
 
 if sys.platform in ('win32', 'cygwin'):
@@ -16,7 +15,7 @@ else:
 def _c_func_wrapper_factory(cdecl_text):
     def move_pointer_and_strip(type_def, name):
         if '*' in name:
-            type_def += ' ' + name[:name.rindex('*')+1]
+            type_def += ' ' + name[:name.rindex('*') + 1]
             name = name.rsplit('*', 1)[1]
         return type_def.strip(), name.strip()
 
@@ -27,34 +26,33 @@ def _c_func_wrapper_factory(cdecl_text):
             'int': ctypes.c_int,
             'int *': ctypes.POINTER(ctypes.c_int),
             'void *': ctypes.c_void_p,
-            'size_t':  ctypes.c_size_t,
-            'size_t *':  ctypes.POINTER(ctypes.c_size_t),
+            'size_t': ctypes.c_size_t,
+            'size_t *': ctypes.POINTER(ctypes.c_size_t),
             'struct nn_msghdr *': ctypes.c_void_p,
         }
-        type_def_without_const = type_def.replace('const ','')
+        type_def_without_const = type_def.replace('const ', '')
         if type_def_without_const in types:
             return types[type_def_without_const]
         elif (type_def_without_const.endswith('*') and
                 type_def_without_const[:-1] in types):
             return ctypes.POINTER(types[type_def_without_const[:-1]])
-        else:
-            raise KeyError(type_def)
+        raise KeyError(type_def)
 
-        return types[type_def.replace('const ','')]
-
-    a, b = [i.strip() for i in cdecl_text.split('(',1)]
-    params, _ = b.rsplit(')',1)
+    a, b = [i.strip() for i in cdecl_text.split('(', 1)]
+    params, _ = b.rsplit(')', 1)
     rtn_type, name = move_pointer_and_strip(*a.rsplit(' ', 1))
     param_spec = []
     for param in params.split(','):
         if param != 'void':
             param_spec.append(move_pointer_and_strip(*param.rsplit(' ', 1)))
-    func = _functype(type_lookup(rtn_type),
-                     *[type_lookup(type_def) for type_def, _ in param_spec])(
-                        (name, _lib),
-                        tuple((2 if '**' in type_def else 1, name)
-                              for type_def, name in param_spec)
-                    )
+    funcmaker = _functype(
+        type_lookup(rtn_type),
+        *[type_lookup(type_def) for type_def, _ in param_spec])
+    func = funcmaker(
+        (name, _lib),
+        tuple((2 if '**' in type_def else 1, name)
+              for type_def, name in param_spec)
+    )
     func.__name__ = name
     return func
 
@@ -90,7 +88,7 @@ for cdecl_text in _C_HEADER.splitlines():
 
 
 def nn_symbols():
-    "query the names and values of nanomsg symbols"
+    """query the names and values of nanomsg symbols"""
     value = ctypes.c_int()
     name_value_pairs = []
     i = 0
@@ -130,7 +128,7 @@ def create_writable_buffer(size):
 
     This is the ctypes implementation.
     """
-    return (ctypes.c_ubyte*size)()
+    return (ctypes.c_ubyte * size)()
 
 
 def nn_setsockopt(socket, level, option, value):
@@ -168,11 +166,11 @@ def nn_getsockopt(socket, level, option, value):
     size_t_size = ctypes.c_size_t(len(value))
     rtn = _nn_getsockopt(socket, level, option, ctypes.addressof(value),
                          ctypes.byref(size_t_size))
-    return (rtn, size_t_size.value)
+    return rtn, size_t_size.value
 
 
 def nn_send(socket, msg, flags):
-    "send a message"
+    """send a message"""
     try:
         return _nn_send(socket, ctypes.addressof(msg), len(buffer(msg)), flags)
     except (TypeError, AttributeError):
@@ -182,7 +180,7 @@ def nn_send(socket, msg, flags):
 
 def _create_message(address, length):
     class Message(ctypes.Union):
-        _fields_ = [('_buf', ctypes.c_ubyte*length)]
+        _fields_ = [('_buf', ctypes.c_ubyte * length)]
         _len = length
         _address = address
 
@@ -204,7 +202,7 @@ def _create_message(address, length):
 
 
 def nn_allocmsg(size, type):
-    "allocate a message"
+    """allocate a message"""
     pointer = _nn_allocmsg(size, type)
     if pointer is None:
         return None
@@ -212,7 +210,7 @@ def nn_allocmsg(size, type):
 
 
 def nn_recv(socket, *args):
-    "receive a message"
+    """receive a message"""
     if len(args) == 1:
         flags, = args
         pointer = ctypes.c_void_p()
@@ -243,7 +241,7 @@ try:
     else:
         _nclib = ctypes.cdll.LoadLibrary('libnanoconfig.so')
 except OSError:
-    pass # No nanoconfig, sorry
+    pass  # No nanoconfig, sorry
 else:
     # int nc_configure (int s, const char *addr)
     nc_configure = _functype(ctypes.c_int, ctypes.c_int, ctypes.c_char_p)(
