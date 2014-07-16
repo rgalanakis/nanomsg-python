@@ -58,6 +58,13 @@ class NanoMsgAPIError(NanoMsgError):
         self.errno, self.msg = errno, msg
 
 
+class NanoMsgSocketClosedError(NanoMsgError):
+    """
+    Exception for when a socket operation is attempted on a closed socket.
+    """
+    def __init__(self):
+        NanoMsgError.__init__(self, 'Cannot perform action on closed socket.')
+
 def _nn_check_positive_rtn(rtn):
     if rtn < 0:
         raise NanoMsgAPIError()
@@ -268,6 +275,7 @@ class Socket(object):
 
     def bind(self, address):
         """Add a local endpoint to the socket"""
+        self._check_open()
         if self.uses_nanoconfig:
             raise ValueError("Nanoconfig address must be sole endpoint")
         endpoint_id = _nn_check_positive_rtn(
@@ -279,6 +287,7 @@ class Socket(object):
 
     def connect(self, address):
         """Add a remote endpoint to the socket"""
+        self._check_open()
         if self.uses_nanoconfig:
             raise ValueError("Nanoconfig address must be sole endpoint")
         endpoint_id = _nn_check_positive_rtn(
@@ -321,8 +330,13 @@ class Socket(object):
         """
         return self.fd >= 0
 
+    def _check_open(self):
+        if not self.is_open():
+            raise NanoMsgSocketClosedError()
+
     def recv(self, buf=None, flags=0):
         """Recieve a message."""
+        self._check_open()
         if buf is None:
             rtn, out_buf = wrapper.nn_recv(self.fd, flags)
         else:
@@ -358,6 +372,7 @@ class Socket(object):
 
     def send(self, msg, flags=0):
         """Send a message"""
+        self._check_open()
         _nn_check_positive_rtn(wrapper.nn_send(self.fd, msg, flags))
 
     def __enter__(self):
