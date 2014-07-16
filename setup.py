@@ -1,19 +1,19 @@
-from __future__ import division, absolute_import, print_function,\
- unicode_literals
+from __future__ import (
+    division, absolute_import, print_function, unicode_literals)
 
 import os
 import sys
+
 try:
     from setuptools import setup
 except ImportError:
     from distutils.core import setup, Extension
 from distutils.core import Extension
-from distutils.errors import DistutilsError
 from distutils.command.build_ext import build_ext
 
 
-with open(os.path.join('nanomsg','version.py')) as f:
-    exec(f.read())
+with open(os.path.join('nanomsg', 'version.py')) as f:
+    exec (f.read())
 
 
 class skippable_build_ext(build_ext):
@@ -37,33 +37,38 @@ class skippable_build_ext(build_ext):
             print("=" * 79)
             print()
 
+
 try:
     import ctypes
+
     if sys.platform in ('win32', 'cygwin'):
         _lib = ctypes.windll.nanoconfig
     else:
         _lib = ctypes.cdll.LoadLibrary('libnanoconfig.so')
 except OSError:
     # Building without nanoconfig
-    cpy_extension = Extension(str('_nanomsg_cpy'),
-                        sources=[str('_nanomsg_cpy/wrapper.c')],
-                        libraries=[str('nanomsg')],
-                        )
+    cpy_extension = Extension(
+        str('_nanomsg_cpy'),
+        sources=[str('_nanomsg_cpy/wrapper.c')],
+        libraries=[str('nanomsg')],
+    )
 else:
     # Building with nanoconfig
-    cpy_extension = Extension(str('_nanomsg_cpy'),
-                        define_macros=[('WITH_NANOCONFIG', '1')],
-                        sources=[str('_nanomsg_cpy/wrapper.c')],
-                        libraries=[str('nanomsg'), str('nanoconfig')],
-                        )
+    cpy_extension = Extension(
+        str('_nanomsg_cpy'),
+        define_macros=[('WITH_NANOCONFIG', '1')],
+        sources=[str('_nanomsg_cpy/wrapper.c')],
+        libraries=[str('nanomsg'), str('nanoconfig')],
+    )
 
 
+# noinspection PyUnresolvedReferences
 setup(
     name='nanomsg',
     version=__version__,
     packages=[str('nanomsg'), str('_nanomsg_ctypes'), str('nanomsg_wrappers')],
     ext_modules=[cpy_extension],
-    cmdclass = {'build_ext': skippable_build_ext},
+    cmdclass={'build_ext': skippable_build_ext},
 
     description='Python library for nanomsg.',
     classifiers=[
